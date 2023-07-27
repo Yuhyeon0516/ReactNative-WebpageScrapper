@@ -13,6 +13,7 @@ import { getOpenGraphData } from "../util/OpenGraphTagUtils";
 import { RemoteImage } from "../components/RemoteImage";
 import { getClipBoardString } from "../util/ClipBoardUtils";
 import { Icon } from "../components/Icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AddLinkScreen() {
   const updateList = useSetRecoilState(atomLinkList);
@@ -20,7 +21,7 @@ export default function AddLinkScreen() {
   const navigation = useNavigation();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [metaData, setMetaData] = useState(null);
+  const [metaData, setMetaData] = useState({});
   const { width } = useWindowDimensions();
   const onPressClose = useCallback(() => {
     navigation.goBack();
@@ -30,7 +31,6 @@ export default function AddLinkScreen() {
     if (!url) return;
 
     updateList((prev) => {
-      console.log(metaData);
       const list = [
         {
           title: metaData.title,
@@ -51,6 +51,7 @@ export default function AddLinkScreen() {
   const onSubmitEditing = useCallback(async () => {
     setLoading(true);
     const result = await getOpenGraphData(url);
+
     setMetaData(result);
     setLoading(false);
   }, [url]);
