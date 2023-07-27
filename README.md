@@ -9,3 +9,5 @@ If you write webpage address in This text field, Metadata allows you to view var
 Then if you click save button, add this address in Link List screen.<br/>
 
 # Result
+
+![Result](https://github.com/Yuhyeon0516/ReactNative-WebpageScrapper/assets/120432007/40a0f507-4fb5-4092-a2c5-b7ef56f5ddfd)
