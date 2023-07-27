@@ -1,4 +1,4 @@
-import { View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, View, useWindowDimensions } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Header } from "../components/Header/Header";
 import { useNavigation } from "@react-navigation/native";
@@ -12,12 +12,14 @@ import { atomLinkList } from "../states/atomLinkList";
 import { getOpenGraphData } from "../util/OpenGraphTagUtils";
 import { RemoteImage } from "../components/RemoteImage";
 import { getClipBoardString } from "../util/ClipBoardUtils";
+import { Icon } from "../components/Icons";
 
 export default function AddLinkScreen() {
   const updateList = useSetRecoilState(atomLinkList);
   const safeAreaInset = useSafeAreaInsets();
   const navigation = useNavigation();
   const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
   const [metaData, setMetaData] = useState(null);
   const { width } = useWindowDimensions();
   const onPressClose = useCallback(() => {
@@ -28,6 +30,7 @@ export default function AddLinkScreen() {
     if (!url) return;
 
     updateList((prev) => {
+      console.log(metaData);
       const list = [
         {
           title: metaData.title,
@@ -46,8 +49,10 @@ export default function AddLinkScreen() {
   }, []);
 
   const onSubmitEditing = useCallback(async () => {
+    setLoading(true);
     const result = await getOpenGraphData(url);
     setMetaData(result);
+    setLoading(false);
   }, [url]);
 
   const onGetClipBoardString = useCallback(async () => {
@@ -75,25 +80,50 @@ export default function AddLinkScreen() {
         </Header.Group>
         <Header.Icon iconName="close" onPress={onPressClose} />
       </Header>
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingTop: 32, paddingHorizontal: 24 }}>
-        <SingleLineInput value={url} onChangeText={setUrl} placeholder={"https://example.com"} onSubmitEditing={onSubmitEditing} />
-        {metaData && (
+      <View style={{ flex: 1, justifyContent: "flex-start", paddingTop: 32, paddingHorizontal: 24 }}>
+        <View>
+          <SingleLineInput value={url} onChangeText={setUrl} placeholder={"https://example.com"} onSubmitEditing={onSubmitEditing} />
+          <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" }}>
+            <CustomButton
+              onPress={() => {
+                setUrl("");
+                setMetaData(null);
+              }}
+            >
+              <Icon iconName={"close"} color={"black"} size={20} />
+            </CustomButton>
+          </View>
+        </View>
+        {loading ? (
           <>
             <Spacer space={20} />
             <View style={{ borderWidth: 1, borderRadius: 4, borderColor: "gray" }}>
-              <RemoteImage url={metaData.image} width={width - 48} height={(width - 48) * 0.5} />
-              <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
-                <Spacer space={10} />
-                <Typography fontSize={20} color={"black"}>
-                  {metaData.title}
-                </Typography>
-                <Spacer space={4} />
-                <Typography fontSize={16} color={"gray"}>
-                  {metaData.description}
-                </Typography>
+              <Spacer space={(width - 48) * 0.5} />
+              <Spacer space={50} />
+              <View style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, alignItems: "center", justifyContent: "center" }}>
+                <ActivityIndicator />
               </View>
             </View>
           </>
+        ) : (
+          metaData && (
+            <>
+              <Spacer space={20} />
+              <View style={{ borderWidth: 1, borderRadius: 4, borderColor: "gray" }}>
+                <RemoteImage url={metaData.image} width={width - 48} height={(width - 48) * 0.5} />
+                <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
+                  <Spacer space={10} />
+                  <Typography fontSize={20} color={"black"}>
+                    {metaData.title}
+                  </Typography>
+                  <Spacer space={4} />
+                  <Typography fontSize={16} color={"gray"}>
+                    {metaData.description}
+                  </Typography>
+                </View>
+              </View>
+            </>
+          )
         )}
       </View>
       <CustomButton onPress={() => onPressSave(url)}>
