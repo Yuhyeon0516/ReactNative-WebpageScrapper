@@ -1,5 +1,5 @@
 import { View, useWindowDimensions } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Header } from "../components/Header/Header";
 import { useNavigation } from "@react-navigation/native";
 import SingleLineInput from "../components/SingleLineInput";
@@ -9,9 +9,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Spacer } from "../components/Spacer";
 import { useSetRecoilState } from "recoil";
 import { atomLinkList } from "../states/atomLinkList";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getOpenGraphData } from "../util/OpenGraphTagUtils";
 import { RemoteImage } from "../components/RemoteImage";
+import { getClipBoardString } from "../util/ClipBoardUtils";
 
 export default function AddLinkScreen() {
   const updateList = useSetRecoilState(atomLinkList);
@@ -30,8 +30,8 @@ export default function AddLinkScreen() {
     updateList((prev) => {
       const list = [
         {
-          title: "",
-          image: "",
+          title: metaData.title,
+          image: metaData.image,
           link: url,
           createdAt: new Date().toISOString(),
         },
@@ -47,9 +47,25 @@ export default function AddLinkScreen() {
 
   const onSubmitEditing = useCallback(async () => {
     const result = await getOpenGraphData(url);
-    console.log(result);
     setMetaData(result);
   }, [url]);
+
+  const onGetClipBoardString = useCallback(async () => {
+    const result = await getClipBoardString();
+    if (result.startsWith("http://") || result.startsWith("https://")) {
+      setUrl(result);
+      const ogResult = await getOpenGraphData(result);
+      setMetaData({
+        title: ogResult.title,
+        image: ogResult.image,
+        description: ogResult.description,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    onGetClipBoardString();
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
