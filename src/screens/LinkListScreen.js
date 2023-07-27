@@ -1,5 +1,5 @@
-import { FlatList, Platform, View } from "react-native";
-import React, { useCallback } from "react";
+import { FlatList, Platform, SectionList, View } from "react-native";
+import React, { useCallback, useMemo } from "react";
 import { Header } from "../components/Header/Header";
 import { CustomButton } from "../components/CustomButton";
 import { Typography } from "../components/Typography";
@@ -22,6 +22,34 @@ export default function LinkListScreen() {
     navigation.navigate("AddLink");
   }, []);
 
+  const sectionData = useMemo(() => {
+    const dateList = {};
+
+    function makeDateString(createdAt) {
+      const dateItem = new Date(createdAt);
+
+      return `${dateItem.getFullYear()}.${dateItem.getMonth()}.${dateItem.getDate()} ${dateItem.getHours()}:${dateItem.getMinutes()}`;
+    }
+
+    if (!data.list) return [];
+
+    data.list.forEach((item) => {
+      const keyName = makeDateString(item.createdAt);
+      if (!dateList[keyName]) {
+        dateList[keyName] = [item];
+      } else {
+        dateList[keyName].push(item);
+      }
+    });
+
+    return Object.keys(dateList).map((item) => {
+      return {
+        title: item,
+        data: dateList[item],
+      };
+    });
+  }, [data.list]);
+
   return (
     <View style={{ flex: 1 }}>
       <Header>
@@ -29,9 +57,8 @@ export default function LinkListScreen() {
           <Header.Title title="Link List" />
         </Header.Group>
       </Header>
-      <FlatList
+      <SectionList
         style={{ flex: 1 }}
-        data={data.list}
         renderItem={({ item }) => {
           return (
             <CustomButton onPress={() => onPressListItem(item)} paddingH={24} paddingV={24}>
@@ -44,6 +71,16 @@ export default function LinkListScreen() {
                 </Typography>
               </View>
             </CustomButton>
+          );
+        }}
+        sections={sectionData}
+        renderSectionHeader={({ section }) => {
+          return (
+            <View style={{ paddingHorizontal: 12, paddingVertical: 4, backgroundColor: "white" }}>
+              <Typography color={"gray"} fontSize={12}>
+                {section.title}
+              </Typography>
+            </View>
           );
         }}
       />

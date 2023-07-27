@@ -12,6 +12,7 @@ import { atomLinkList } from "../states/atomLinkList";
 import { getOpenGraphData } from "../util/OpenGraphTagUtils";
 import { RemoteImage } from "../components/RemoteImage";
 import { getClipBoardString } from "../util/ClipBoardUtils";
+import { Icon } from "../components/Icons";
 
 export default function AddLinkScreen() {
   const updateList = useSetRecoilState(atomLinkList);
@@ -29,6 +30,7 @@ export default function AddLinkScreen() {
     if (!url) return;
 
     updateList((prev) => {
+      console.log(metaData);
       const list = [
         {
           title: metaData.title,
@@ -79,7 +81,19 @@ export default function AddLinkScreen() {
         <Header.Icon iconName="close" onPress={onPressClose} />
       </Header>
       <View style={{ flex: 1, justifyContent: "flex-start", paddingTop: 32, paddingHorizontal: 24 }}>
-        <SingleLineInput value={url} onChangeText={setUrl} placeholder={"https://example.com"} onSubmitEditing={onSubmitEditing} />
+        <View>
+          <SingleLineInput value={url} onChangeText={setUrl} placeholder={"https://example.com"} onSubmitEditing={onSubmitEditing} />
+          <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" }}>
+            <CustomButton
+              onPress={() => {
+                setUrl("");
+                setMetaData(null);
+              }}
+            >
+              <Icon iconName={"close"} color={"black"} size={20} />
+            </CustomButton>
+          </View>
+        </View>
         {loading ? (
           <>
             <Spacer space={20} />
