@@ -22,8 +22,6 @@ export default function LinkListScreen() {
     navigation.navigate("AddLink");
   }, []);
 
-  console.log(`${Platform.OS}`, data);
-
   return (
     <View style={{ flex: 1 }}>
       <Header>
